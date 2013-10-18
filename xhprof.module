@@ -103,18 +103,32 @@ function xhprof_xhprof_enable() {
  * Check whether XHProf should be enabled for the current request.
  */
 function xhprof_is_enabled() {
-  $enabled = FALSE;
-  if (extension_loaded('xhprof') && variable_get('xhprof_enabled', FALSE)) {
-    $enabled = TRUE;
-    if (arg(0) == 'admin' && variable_get('xhprof_disable_admin_paths', TRUE)) {
-      $enabled = FALSE;
-    }
-    $interval = variable_get('xhprof_interval', 1);
-    if ($interval && mt_rand(1, $interval) % $interval != 0) {
-      $enabled = FALSE;
-    }
+  if (!extension_loaded('xhprof')) {
+    return FALSE;
   }
-  return $enabled;
+
+  // ?dhprof=1 override
+  if (isset($_GET['dhprof']) && $_GET['dhprof']) {
+    return TRUE;
+  }
+
+  // check site-wide enable
+  $enabled = variable_get('xhprof_enabled', FALSE);
+  if(!$enabled) {
+      return FALSE;
+  }
+
+  // interval check
+  $interval = variable_get('xhprof_interval', 1);
+  if ($interval && mt_rand(1, $interval) % $interval != 0) {
+    return FALSE;
+  }
+
+  // admin check
+  if (arg(0) == 'admin' && variable_get('xhprof_disable_admin_paths', TRUE)) {
+    return FALSE;
+  }
+  return TRUE;
 }
 
 /**
