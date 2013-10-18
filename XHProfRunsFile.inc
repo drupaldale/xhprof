@@ -68,7 +68,7 @@ class XHProfRunsFile implements XHProfRunsInterface {
     return unserialize($contents);
   }
 
-  public function save_run($xhprof_data, $type, $run_id = NULL) {
+  public function save_run($xhprof_data, $type, $run_id = NULL, $path = NULL) {
 
     // Use PHP serialize function to store the XHProf's
     // raw profiler data.
@@ -76,6 +76,11 @@ class XHProfRunsFile implements XHProfRunsInterface {
 
     if ($run_id === NULL) {
       $run_id = $this->gen_run_id($type);
+    }
+
+    // store path as part of filename
+    if($path != NULL) {
+      $run_id = $path."___".$this->gen_run_id($type);
     }
 
     $file_name = $this->file_name($run_id, $type);
@@ -97,6 +102,14 @@ class XHProfRunsFile implements XHProfRunsInterface {
     $files = $this->scanXHProfDir($this->getDir(), variable_get('site_name', ''));
     foreach ($files as $i => $file) {
       $file['date'] = strtotime($file['date']);
+
+      // extract path if available
+      $run_id = $file['run_id'];
+      $bits = explode('___', $run_id);
+      if (sizeof($bits) > 1) {
+        $path = $bits[0];
+        $file['path'] = $path;
+      }
       $files[$i] = $file;
     }
     return $files;
