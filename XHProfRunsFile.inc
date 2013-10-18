@@ -80,7 +80,9 @@ class XHProfRunsFile implements XHProfRunsInterface {
 
     // store path as part of filename
     if($path != NULL) {
-      $run_id = $path."___".$this->gen_run_id($type);
+      // simple sanitize, might need to expand on this
+      $path = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\-]/'), array('_', '.', ''), $path);
+      $run_id = $path."___".$run_id;
     }
 
     $file_name = $this->file_name($run_id, $type);
